@@ -1,0 +1,5 @@
+services:
+  pq_starter_admin.route_subscriber:
+    class: Drupal\pq_starter_admin\Routing\AdminRouteSubscriber
+    tags:
+      - { name: event_subscriber }

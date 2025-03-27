@@ -1,0 +1,10 @@
+<?php
+/**
+ * @file
+ * Contains installation and update routines for Users.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function pq_starter_users_install() { }

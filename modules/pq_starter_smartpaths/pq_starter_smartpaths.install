@@ -1,0 +1,12 @@
+<?php
+/**
+ * @file
+ * Contains installation and update routines for Smart Paths.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function pq_starter_smartpaths_install() {
+  module_set_weight('pq_starter_smartpaths', 1);
+}

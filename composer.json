@@ -1,0 +1,22 @@
+{
+  "name": "drupal/pq_starter",
+  "description": "Pixel Quest Starter Kit",
+  "type": "drupal-module",
+  "homepage": "https://github.com/NeoPixelQuest/pq_starter",
+  "authors": [
+    {
+      "name": "Michael Palmer",
+      "email": "michael@pixel-quest.io",
+      "homepage": "https://pixel-quest.io",
+      "role": "Maintainer"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/NeoPixelQuest/pq_starter/issues",
+    "source": "https://github.com/NeoPixelQuest/pq_starter.git"
+  },
+  "require" : {
+    "drupal/core": "^10.4 || ^11"
+  },
+  "license": "GPL-3.0-or-later"
+}

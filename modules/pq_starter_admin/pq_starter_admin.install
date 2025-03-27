@@ -1,0 +1,27 @@
+<?php
+/**
+ * @file
+ * Contains installation and update routines for Admin interface changes.
+ */
+
+use Symfony\Component\Yaml\Yaml;
+
+/**
+ * Implements hook_install().
+ */
+function pq_starter_admin_install() {
+  module_set_weight('pq_starter_admin', 1);
+
+  // During installation, make sure to update core views / configuration.
+  _pq_starter_admin_override_config('views.view.content');
+  _pq_starter_admin_override_config('views.view.media');
+  _pq_starter_admin_override_config('views.view.media_library');
+  _pq_starter_admin_override_config('views.view.user_admin_people');
+
+  // Disable the Moderated Content view as that is now the default Content view.
+  $moderatedView = \Drupal::configFactory()->getEditable('views.view.moderated_content');
+  if ($moderatedView) {
+    $moderatedView->set('status', false);
+    $moderatedView->save();
+  }
+}
