@@ -1,5 +1,5 @@
 {
-  "name": "drupal/pq_starter",
+  "name": "pixelquest/pq_starter",
   "description": "Pixel Quest Starter Kit",
   "type": "drupal-module",
   "homepage": "https://github.com/NeoPixelQuest/pq_starter",
