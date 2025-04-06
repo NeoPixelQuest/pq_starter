@@ -1,9 +1,9 @@
 langcode: en
 status: true
 dependencies: {  }
-id: layout_padding_left
-label: 'Padding - Left'
+id: block__general__bg_color
+label: 'Background Color'
 multiselect: single
 form_type: checkboxes
 required: false
-weight: -2
+weight: 1

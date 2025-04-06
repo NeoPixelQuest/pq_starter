@@ -6,4 +6,4 @@ label: 'Margin - Right'
 multiselect: single
 form_type: checkboxes
 required: false
-weight: -2
+weight: -5

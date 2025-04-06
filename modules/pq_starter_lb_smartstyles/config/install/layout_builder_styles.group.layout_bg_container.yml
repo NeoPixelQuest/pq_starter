@@ -6,4 +6,4 @@ label: 'Background Container'
 multiselect: single
 form_type: checkboxes
 required: false
-weight: -9
+weight: -12

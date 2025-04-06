@@ -6,4 +6,4 @@ label: 'Layout Container'
 multiselect: single
 form_type: checkboxes
 required: true
-weight: -10
+weight: -13

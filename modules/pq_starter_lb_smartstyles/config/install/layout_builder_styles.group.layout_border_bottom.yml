@@ -6,4 +6,4 @@ label: 'Border - Bottom'
 multiselect: single
 form_type: checkboxes
 required: false
-weight: -6
+weight: -9

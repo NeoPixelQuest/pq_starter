@@ -4,6 +4,10 @@
  * Contains hooks for the module for Layout Builder - Smart Styles.
  */
 
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\NodeInterface;
+use Drupal\media\MediaInterface;
+use Drupal\pq_starter_lb_smartstyles\LayoutSmartStylesBlock;
 
 /**
  * Implements hook_help().
@@ -17,6 +21,11 @@ function pq_starter_lb_smartstyles_help($route_name, $route_match) {
     $output .= '<li><strong>layout_styles</strong>: ' . t('An array containing all of the rest of the defined and set Layout Styles classes.') . '</li>';
     $output .= '</ul>';
     $output .= '<p>' . t('A simple example of rendering the arrays in twig: {{ layout_styles|join( \' \')|trim }}') . '</p>';
+    $output .= '<p>' . t('This module also helps in the rendering of Layout Builder Styles fields for blocks. By following a simple pattern, you can help keep these fields organized. The pattern is:') . '</p>';
+    $output .= '<p>' . t('"block__{group_name}__{field_name}", where {group_name} is what you want the group label to say, and the {field_name} is the field name you desire. Use this pattern on the style group for the form organization.') . '</p>';
+    $output .= '<p>' . t('By using this pattern on the block options (where the CSS classes are defined), it will open up options for you in twig. Those options are:') . '</p>';
+    $output .= '<p>' . t('"smart_styles" - a multi-part array where the keys are the defined {group_name}. If you do not follow the pattern above, then they will be put into a "general" key.') . '</p>';
+    $output .= '<p>' . t('"smart_styles_combined" - a simple array of all the CSS classes that can be added where you want in the twig file.') . '</p>';
     return $output;
   }
 
@@ -24,26 +33,71 @@ function pq_starter_lb_smartstyles_help($route_name, $route_match) {
 }
 
 /**
- * Implements hook_library_info_alter().
+ * Implements HOOK_form_alter().
  */
-function pq_starter_lb_smartstyles_library_info_alter(array &$libraries, string $extension) {
-  if ($extension !== 'pq_starter_lb_smartstyles') {
-    return;
+function pq_starter_lb_smartstyles_form_alter(&$form, $form_state, $form_id) {
+  // Only looking for the layout builder add and update block forms.
+  if ($form['#form_id'] === 'layout_builder_add_block' || $form['#form_id'] === 'layout_builder_update_block') {
+    $lbStyles = new LayoutSmartStylesBlock();
+    $form = $lbStyles->updateLayoutBuilderForm($form);
   }
+}
 
-  $libraries['gin_lb_helper'] = [
-    'css' => [
-      'theme' => [
-        'css/gin_lb_smartstyles.css' => [],
-      ]
-    ]
-  ];
+function _pq_starter_lb_smartstyles_layout_builder_styles_submit_block_form(array $form, FormStateInterface $formState) {
+  /** @var \Drupal\layout_builder\Form\ConfigureBlockFormBase $formObject */
+  $formObject = $formState->getFormObject();
+  $component = $formObject->getCurrentComponent();
+
+  $lbStyles = new LayoutSmartStylesBlock();
+  $selectedStyles = $lbStyles->updateSubmitBlockForm($form, $formState);
+
+  $component->set('layout_builder_styles_style', $selectedStyles);
 }
 
 /**
  * Implements hook_preprocess_hook().
  */
 function pq_starter_lb_smartstyles_preprocess_layout(&$variables) {
+  $type = NULL;
+  $entityType = NULL;
+  $hasPermission = false;
+
+  // By checking the route parameter of either node or media, build the permissions to check the
+  // current user could have. If they have it, then we will want to add the library to it.
+  $user = \Drupal::currentUser();
+  $routeMatch = \Drupal::routeMatch();
+
+  $node = $routeMatch->getParameter('node');
+  $media = $routeMatch->getParameter('media');
+
+  if ($node instanceof NodeInterface) {
+    $type = $node->bundle();
+    $entityType = 'node';
+  }
+  elseif ($media instanceof MediaInterface) {
+    $type = $media->bundle();
+    $entityType = 'media';
+  }
+
+  if ($type) {
+    $typePermissions = [
+      'configure editable ' . $type . ' ' . $entityType . ' layout overrides',
+      'configure all ' . $type . ' ' . $entityType . ' layout overrides',
+      'create and edit custom blocks',
+    ];
+
+    foreach ($typePermissions as $permission) {
+      $hasPermission = $user->hasPermission($permission);
+      if ($hasPermission) {
+        break;
+      }
+    }
+  }
+
+  if ($hasPermission) {
+    $variables['#attached']['library'][] = 'pq_starter_lb_smartstyles/gin_lb_helper';
+  }
+
   // Get the current theme and admin theme. If they are the same, exit out.
   $current_theme = \Drupal::theme()->getActiveTheme()->getName();
   $admin_theme = \Drupal::config('system.theme')->get('admin');
@@ -55,9 +109,6 @@ function pq_starter_lb_smartstyles_preprocess_layout(&$variables) {
   if (!array_key_exists('layout_builder_styles_style', $variables['settings'])) {
     return;
   }
-
-  // Attach the gin_lb_helper CSS to help with rendering of the options.
-  $variables['#attached']['library'][] = 'pq_starter_lb_smartstyles/gin_lb_helper';
 
   // Go through and check the set settings for the Layout Styles.
   $variables['layout_full_width'] = FALSE;
@@ -83,6 +134,21 @@ function pq_starter_lb_smartstyles_preprocess_layout(&$variables) {
   }
 
   $variables['layout_styles'] = $customStyles;
+}
+
+/**
+ * Implements hook_preprocess_hook().
+ */
+function pq_starter_lb_smartstyles_preprocess_block(&$variables) {
+  if (array_key_exists('elements', $variables) && is_array($variables['elements']) && array_key_exists('#smartstyles_block_classes', $variables['elements'])) {
+    $smartStyles = $variables['elements']['#smartstyles_block_classes'];
+    $combined = [];
+    foreach ($smartStyles as $styles) {
+      $combined = array_merge($combined, $styles);
+    }
+    $variables['smart_styles'] = $variables['elements']['#smartstyles_block_classes'];
+    $variables['smart_styles_combined'] = $combined;
+  }
 }
 
 /**
