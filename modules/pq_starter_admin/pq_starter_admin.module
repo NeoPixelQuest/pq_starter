@@ -7,6 +7,19 @@
 use Symfony\Component\Yaml\Yaml;
 
 /**
+ * Implements hook_page_attachments().
+ */
+function pq_starter_admin_page_attachments(array &$attachments) {
+  $user = \Drupal::currentUser();
+
+  // Check if the user is authenticated (logged in) AND has permission
+  // to access the toolbar. The 'access toolbar' permission is standard.
+  if ($user->isAuthenticated() && $user->hasPermission('access toolbar')) {
+    $attachments['#attached']['library'][] = 'pq_starter_admin/gin_toolbar_environment_indicator';
+  }
+}
+
+/**
  * Callable custom function to update / override existing config from what is on disk in the module.
  *
  * @param string $configName
