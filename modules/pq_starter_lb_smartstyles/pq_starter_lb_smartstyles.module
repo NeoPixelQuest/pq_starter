@@ -112,6 +112,8 @@ function pq_starter_lb_smartstyles_preprocess_layout(&$variables) {
 
   // Go through and check the set settings for the Layout Styles.
   $variables['layout_full_width'] = FALSE;
+  $variables['layout_container'] = [];
+  $variables['layout_styles'] = [];
   $customStyles = [];
   $setStyles = $variables['settings']['layout_builder_styles_style'];
   $configPrefix = 'layout_builder_styles.style.';
@@ -126,7 +128,13 @@ function pq_starter_lb_smartstyles_preprocess_layout(&$variables) {
       if ($styleId === 'layout_container__full_width') {
         $variables['layout_full_width'] = TRUE;
       }
-      $variables['layout_container'] = $splitClasses['separatedClasses'];
+      elseif ($styleId === 'layout_container__centered') {
+        $variables['layout_full_width'] = FALSE;
+      }
+      else {
+        $variables['layout_container'] = array_merge($variables['layout_container'], $splitClasses['separatedClasses']);
+      }
+
     }
     else {
       $customStyles = array_merge($customStyles, $splitClasses['separatedClasses']);
